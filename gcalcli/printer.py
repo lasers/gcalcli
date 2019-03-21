@@ -87,6 +87,8 @@ class Printer(object):
 
     def msg(self, msg, colorname='default', file=sys.stdout):
         if self.use_color:
+            if self.conky:
+                msg = msg.replace('$', '${execi 3600 echo $}')
             msg = self.colors[colorname] + msg + self.colors['default']
         file.write(_u(msg))
 
