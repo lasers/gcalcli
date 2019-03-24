@@ -98,8 +98,10 @@ def get_details_parser():
 def get_output_parser(parents=[]):
     output_parser = argparse.ArgumentParser(add_help=False, parents=parents)
     output_parser.add_argument(
-            '--tsv', action='store_true', dest='tsv', default=False,
-            help='Use Tab Separated Value output')
+            '--tsv', action='store_true', dest='tsv', default=None,
+            help=argparse.SUPPRESS)
+    output_parser.add_argument(
+            '--delimiter', dest='delimiter', help='Set delimiter')
     output_parser.add_argument(
             '--nostarted', action='store_true', dest='ignore_started',
             default=False, help='Hide events that have started')

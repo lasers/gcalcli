@@ -609,38 +609,47 @@ class GoogleCalendarInterface:
             else:
                 self.printer.msg(week_bottom + '\n', color_border)
 
-    def _tsv(self, start_datetime, event_list):
+    def _delimiter(self, delimiter, start_datetime, event_list):
         for event in event_list:
             if self.options['ignore_started'] and (event['s'] < self.now):
                 continue
             if self.options['ignore_declined'] and self._DeclinedEvent(event):
                 continue
-            output = '%s\t%s\t%s\t%s' % (_u(event['s'].strftime('%Y-%m-%d')),
-                                         _u(event['s'].strftime('%H:%M')),
-                                         _u(event['e'].strftime('%Y-%m-%d')),
-                                         _u(event['e'].strftime('%H:%M')))
+            output = delimiter.join([
+                _u(event['s'].strftime('%Y-%m-%d')),
+                _u(event['s'].strftime('%H:%M')),
+                _u(event['e'].strftime('%Y-%m-%d')),
+                _u(event['e'].strftime('%H:%M'))
+            ])
 
             if self.details.get('url'):
-                output += '\t%s' % (self._shorten_url(event['htmlLink'])
+                output += delimiter
+                output += (self._shorten_url(event['htmlLink'])
                                     if 'htmlLink' in event else '')
-                output += '\t%s' % (self._shorten_url(event['hangoutLink'])
+                output += delimiter
+                output += (self._shorten_url(event['hangoutLink'])
                                     if 'hangoutLink' in event else '')
 
-            output += '\t%s' % _u(self._valid_title(event).strip())
+            output += delimiter
+            output += _u(self._valid_title(event).strip())
 
             if self.details.get('location'):
-                output += '\t%s' % (_u(event['location'].strip())
+                output += delimiter
+                output += (_u(event['location'].strip())
                                     if 'location' in event else '')
 
             if self.details.get('description'):
-                output += '\t%s' % (_u(event['description'].strip())
+                output += delimiter
+                output += (_u(event['description'].strip())
                                     if 'description' in event else '')
 
             if self.details.get('calendar'):
-                output += '\t%s' % _u(event['gcalcli_cal']['summary'].strip())
+                output += delimiter
+                output += _u(event['gcalcli_cal']['summary'].strip())
 
             if self.details.get('email'):
-                output += '\t%s' % (event['creator']['email'].strip()
+                output += delimiter
+                output += (event['creator']['email'].strip()
                                     if 'email' in event['creator'] else '')
 
             output = '%s\n' % output.replace('\n', '''\\n''')
@@ -1178,8 +1187,11 @@ class GoogleCalendarInterface:
                                 year_date=False):
         event_list = self._search_for_events(start, end, search)
 
-        if self.options.get('tsv'):
-            return self._tsv(start, event_list)
+        delimiter = self.options['tsv'] or self.options['delimiter']
+        if delimiter is not None:
+            if isinstance(delimiter, bool):
+                delimiter = '\t'
+            return self._delimiter(delimiter, start, event_list)
         else:
             return self._iterate_events(start, event_list, year_date=year_date)
 
