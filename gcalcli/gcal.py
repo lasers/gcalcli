@@ -615,6 +615,11 @@ class GoogleCalendarInterface:
                 continue
             if self.options['ignore_declined'] and self._DeclinedEvent(event):
                 continue
+
+            for x in event:
+                if isinstance(event[x], str) and delimiter in event[x]:
+                    event[x] = event[x].replace(delimiter, ' ')
+
             output = delimiter.join([
                 _u(event['s'].strftime('%Y-%m-%d')),
                 _u(event['s'].strftime('%H:%M')),
