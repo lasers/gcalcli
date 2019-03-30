@@ -8,6 +8,7 @@ import textwrap
 import json
 import random
 import sys
+from codecs import escape_decode
 from unicodedata import east_asian_width
 
 from datetime import datetime, timedelta, date
@@ -610,6 +611,7 @@ class GoogleCalendarInterface:
                 self.printer.msg(week_bottom + '\n', color_border)
 
     def _delimiter(self, delimiter, start_datetime, event_list):
+        delimiter = escape_decode(bytes(delimiter, "utf-8"))[0].decode("utf-8")
         for event in event_list:
             if self.options['ignore_started'] and (event['s'] < self.now):
                 continue
@@ -617,8 +619,9 @@ class GoogleCalendarInterface:
                 continue
 
             for x in event:
-                if isinstance(event[x], str) and delimiter in event[x]:
-                    event[x] = event[x].replace(delimiter, ' ')
+                if isinstance(event[x], str):
+                    string = escape_decode(bytes(event[x], "utf-8"))[0].decode()
+                    event[x] = string.replace(delimiter, ' ')
 
             output = delimiter.join([
                 _u(event['s'].strftime('%Y-%m-%d')),
@@ -1194,8 +1197,8 @@ class GoogleCalendarInterface:
 
         delimiter = self.options['tsv'] or self.options['delimiter']
         if delimiter is not None:
-            if isinstance(delimiter, bool):
-                delimiter = '\t'
+            if delimiter is True:
+               delimiter = '\t'
             return self._delimiter(delimiter, start, event_list)
         else:
             return self._iterate_events(start, event_list, year_date=year_date)
